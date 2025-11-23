@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary">
+                <i class="fas fa-cloud-rain me-3"></i>
+                Analyse des Précipitations au Maroc
+            </h1>
+            <p class="lead text-muted">
+                Explorez les données de précipitations à travers le Maroc et analysez les tendances climatiques par ville et par année
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Contrôles -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Contrôles d'Analyse</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="citySelect" class="form-label">Sélectionner une ville:</label>
+                        <select class="form-select" id="citySelect" onchange="updateCharts()">
+                            <option value="">Toutes les villes</option>
+                            <option value="Casablanca">Casablanca</option>
+                            <option value="Rabat">Rabat</option>
+                            <option value="Marrakech">Marrakech</option>
+                            <option value="Fès">Fès</option>
+                            <option value="Tanger">Tanger</option>
+                            <option value="Agadir">Agadir</option>
+                            <option value="Meknès">Meknès</option>
+                            <option value="Oujda">Oujda</option>
+                            <option value="Kenitra">Kenitra</option>
+                            <option value="Tétouan">Tétouan</option>
+                            <option value="Salé">Salé</option>
+                            <option value="Nador">Nador</option>
+                            <option value="Settat">Settat</option>
+                            <option value="Khouribga">Khouribga</option>
+                            <option value="Beni Mellal">Beni Mellal</option>
+                            <option value="Taza">Taza</option>
+                            <option value="El Jadida">El Jadida</option>
+                            <option value="Larache">Larache</option>
+                            <option value="Ksar El Kebir">Ksar El Kebir</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="yearRange" class="form-label">Période d'analyse:</label>
+                        <select class="form-select" id="yearRange" onchange="updateData()">
+                            <option value="2015,2023">2015-2023</option>
+                            <option value="2020,2023">2020-2023</option>
+                            <option value="2018,2023">2018-2023</option>
+                            <option value="2015,2020">2015-2020</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="updateData()">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Actualiser les Données
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<section id="statistics" class="mb-5">
+    <h2 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Statistiques Générales</h2>
+    
+    <div class="loading" id="loading-stats">
+        <i class="fas fa-spinner"></i>
+        <p>Chargement des statistiques...</p>
+    </div>
+    
+    <div class="row" id="stats-container">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3 id="total-precip">0</h3>
+                <p>Total Précipitations (mm)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3 id="avg-precip">0</h3>
+                <p>Moyenne (mm)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3 id="max-precip">0</h3>
+                <p>Maximum (mm)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3 id="min-precip">0</h3>
+                <p>Minimum (mm)</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Informations Générales</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Villes couvertes:</strong> <span id="cities-count">0</span></li>
+                        <li><strong>Années analysées:</strong> <span id="years-covered">-</span></li>
+                        <li><strong>Ville la plus humide:</strong> <span id="wettest-city">-</span></li>
+                        <li><strong>Ville la plus sèche:</strong> <span id="driest-city">-</span></li>
+                        <li><strong>Année la plus humide:</strong> <span id="wettest-year">-</span></li>
+                        <li><strong>Année la plus sèche:</strong> <span id="driest-year">-</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">À Propos des Données</h5>
+                    <p class="card-text">
+                        Cette application utilise des données simulées basées sur les patterns climatiques réels du Maroc. 
+                        Les données incluent les précipitations mensuelles pour 20 villes principales du pays.
+                    </p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            Les données sont générées de manière réaliste en tenant compte des saisons humides 
+                            (novembre-mars) et sèches (juin-août) caractéristiques du climat marocain.
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Graphiques -->
+<section id="analysis" class="mb-5">
+    <h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Analyse et Visualisations</h2>
+    
+    <!-- Graphique 1: Évolution Annuelle -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4>Évolution des Précipitations Annuelles</h4>
+                <div class="loading" id="loading-yearly">
+                    <i class="fas fa-spinner"></i>
+                    <p>Génération du graphique...</p>
+                </div>
+                <img id="chart-yearly" class="img-fluid" style="display: none;" alt="Graphique des précipitations annuelles">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Graphique 2: Moyennes Mensuelles -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4>Précipitations Mensuelles Moyennes</h4>
+                <div class="loading" id="loading-monthly">
+                    <i class="fas fa-spinner"></i>
+                    <p>Génération du graphique...</p>
+                </div>
+                <img id="chart-monthly" class="img-fluid" style="display: none;" alt="Graphique des précipitations mensuelles">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Graphique 3: Comparaison Annuelle -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4>Comparaison des Précipitations Annuelles Moyennes</h4>
+                <div class="loading" id="loading-comparison">
+                    <i class="fas fa-spinner"></i>
+                    <p>Génération du graphique...</p>
+                </div>
+                <img id="chart-comparison" class="img-fluid" style="display: none;" alt="Graphique de comparaison">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Informations Supplémentaires -->
+<section class="mb-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Comment Utiliser l'Application</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li><strong>Sélectionnez une ville</strong> pour analyser les données spécifiques à cette localité</li>
+                        <li><strong>Choisissez la période</strong> d'analyse selon vos besoins</li>
+                        <li><strong>Actualisez les données</strong> pour voir les changements</li>
+                        <li><strong>Consultez les graphiques</strong> pour visualiser les tendances</li>
+                        <li><strong>Analysez les statistiques</strong> pour comprendre les patterns climatiques</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Insights Climatiques</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>Saison humide:</strong> Novembre à Mars</li>
+                        <li><strong>Saison sèche:</strong> Juin à Août</li>
+                        <li><strong>Régions côtières:</strong> Plus humides (Casablanca, Rabat, Tanger)</li>
+                        <li><strong>Régions intérieures:</strong> Plus sèches (Marrakech, Agadir)</li>
+                        <li><strong>Variabilité:</strong> Forte variation inter-annuelle</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateCharts() {
+        const city = document.getElementById('citySelect').value;
+        updateChart('yearly', city);
+        updateChart('monthly', city);
+        updateChart('comparison');
+    }
+    
+    function updateData() {
+        const yearRange = document.getElementById('yearRange').value;
+        const years = yearRange.split(',');
+        
+        fetch(`/generate_data?years=${yearRange}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                loadStatistics();
+                updateCharts();
+            })
+            .catch(error => {
+                console.error('Erreur lors de la mise à jour des données:', error);
+            });
+    }
+    
+    // Charger les graphiques au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCharts();
+    });
+</script>
+{% endblock %}
+
+
